@@ -10,8 +10,23 @@ const memcachedClient = new memcached(`${process.env.ENDPOINT}:${process.env.POR
 exports.chargeRequestRedis = async function (input) {
     const redisClient = await getRedisClient();
     var remainingBalance = await getBalanceRedis(redisClient, KEY);
-    const charges = input.unit
+    const units = input.unit;
+    const service_type = input.serviceType;
     // Getting charges to be updated from the request body
+    const VOICE_RATE = process.env.VOICE_RATE;
+    const DATA_RATE = process.env.DATA_RATE;
+    var charges = 0;
+    if(service_type == "voice"){
+        charges = VOICE_RATE * units;
+    }
+    else if(service_type == "data")
+    {
+        charges = DATA_RATE * units;
+    }
+    else
+    {
+        throw "Invalid Service Type";
+    }
     const isAuthorized = authorizeRequest(remainingBalance, charges);
     if (!isAuthorized) {
         return {
@@ -56,7 +71,23 @@ exports.resetMemcached = async function () {
 };
 exports.chargeRequestMemcached = async function (input) {
     var remainingBalance = await getBalanceMemcached(KEY);
-    const charges = input.unit
+    const units = input.unit;
+    const service_type = input.serviceType;
+    // Getting charges to be updated from the request body
+    const VOICE_RATE = process.env.VOICE_RATE;
+    const DATA_RATE = process.env.DATA_RATE;
+    var charges = 0;
+    if(service_type == "voice"){
+        charges = VOICE_RATE * units;
+    }
+    else if(service_type == "data")
+    {
+        charges = DATA_RATE * units;
+    }
+    else
+    {
+        throw "Invalid Service Type";
+    }
     // Getting charges to be updated from the request body
     const isAuthorized = authorizeRequest(remainingBalance, charges);
     if (!authorizeRequest(remainingBalance, charges)) {
